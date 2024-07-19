@@ -72,7 +72,7 @@ tuple<int, int, double> jobShopInstance(const int instance) {
 
     tuple<int, int, double> result = make_tuple(instance, makeSpan, executionTime);
 
-    cout << "Instância " << instance << ": makeSpan = " << makeSpan << ", Tempo de Execução = " << executionTime << "s" << endl;
+    cout << "Instancia " << instance << ": makeSpan = " << makeSpan << ", Tempo de Execucao = " << executionTime << "s" << endl;
     cout<<endl;
 
     return result;
@@ -95,15 +95,15 @@ void jobShopInstances() {
 }
 
 void showMenu() {
-    cout << "Escolha uma das opções abaixo:\n";
+    cout << "Escolha uma das opcoes abaixo:\n";
     cout << "1. Grafo Fixo\n";
-    cout << "2. Instâncias do Job Shop\n";
+    cout << "2. Instancias do Job Shop\n";
     cout << "3. Sair\n";
-    cout << "Digite a opção desejada: ";
+    cout << "Digite a opcao desejada: ";
 }
 
 void showSubMenu() {    
-    cout << "Escolha uma das opções abaixo:\n";
+    cout << "Escolha uma das opcoes abaixo:\n";
     cout << "1. Executar instancia expecifica\n";
     cout << "2. Executar todas as instancias\n";
     cout << "3. Sair\n";
