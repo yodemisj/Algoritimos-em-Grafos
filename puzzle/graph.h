@@ -4,6 +4,7 @@
 #include <map>
 #include <queue>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -28,7 +29,6 @@ void initM(vector<vector<int>>& m, int puzzleSize, int lineSize) {
         for(int j = 0; j < puzzleSize; j++) {
             m[i][j] = calculateMovesToPosition(i, j, lineSize);
         }
-        cout<<endl;
     }
 }
 
@@ -122,7 +122,7 @@ void addNeighbors(const Board& board, const int lineSize) {
     } 
 }
 
-void a_star(Board start, Board goal, int lineSize) {
+void a_star(Board start, Board goal, int lineSize, bool stepByStep) {
     auto compare = [](const Board& a, const Board& b) {
         return a.second > b.second;
     };
@@ -141,15 +141,44 @@ void a_star(Board start, Board goal, int lineSize) {
         S.push_back(current);
         // cout<<i++<<endl;
 
-        for(auto number : current.first) {
-            cout << number << " ";
-        }
-        cout<<endl;
-        if(current.first == goal.first) {
-            cout<<"achou"<<endl;
+        // for(auto number : current.first) {
+        //     cout << number << " ";
+        // }
+        // cout<<endl;
+        // if(current.first == goal.first) {
+        //     cout<<"achou"<<endl;
             
+        //     break;
+        // }
+
+        // if (stepByStep) { 
+        //     for (auto number : current.first) {
+        //         cout << number << " ";
+        //     }
+        //     cout << endl;
+        // }
+
+        if (current.first == goal.first) {
+            cout << "Solução encontrada!" << endl;
+            // Exibir a sequência de passos se stepByStep for false
+            if (!stepByStep) {
+                vector<Board> path;
+                for (Board at = current; at != start; at = pi[at]) {
+                    path.push_back(at);
+                }
+                path.push_back(start);
+                reverse(path.begin(), path.end());
+
+                for (const auto& state : path) {
+                    for (int num : state.first) {
+                        cout << num << " ";
+                    }
+                    cout << endl;
+                }
+            }
             break;
         }
+
 
         addNeighbors(current,lineSize);
 
@@ -165,6 +194,5 @@ void a_star(Board start, Board goal, int lineSize) {
         }
     }
 }   
-
 
 };
