@@ -23,7 +23,6 @@ public:
             }
         }
     }
-    
     static void saveSolutionSteps(const string& filePath, const vector<Board>& solutionSteps, const int lineSize) {
         ofstream file(filePath);
 
