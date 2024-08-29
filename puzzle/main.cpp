@@ -1,72 +1,168 @@
-#include <iostream>
-#include <chrono>
+#include "includes.h"
 #include "graph.h"
+#include "fileUtils.h"
 
 using namespace std;
 
-double puzzleInstance(Board board, Board goal, bool stepByStep) {
-    Graph graph(board, 9, 3);
+vector<Board> puzzle_8_instances;
+vector<Board> puzzle_15_instances;
+
+double solvePuzzleAStar(Board board, Board goal, bool stepByStep, int puzzleSize, int lineSize) {
+    Graph graph(board, puzzleSize, lineSize);
+    map<vector<int>, Board> pi;
+    vector<Board> solutionSteps;
+    FileUtils fileUtils;
+
     auto start = std::chrono::high_resolution_clock::now();
-    graph.a_star(board, goal, 3, stepByStep);
+    pi = graph.a_star(board, goal, lineSize);
     auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    double executionTime = duration.count();
+    std::chrono::duration<double> elapsed = end - start;
+    double executionTime = elapsed.count();
+
+    Board current = goal;
+
+    while (current.first != board.first) {
+        solutionSteps.push_back(current);
+        current = pi[current.first]; 
+    }
+
+    solutionSteps.push_back(board);
+
+    cout << "Passos na solução ótima: " << solutionSteps.size() << "\n";
+
+    reverse(solutionSteps.begin(), solutionSteps.end());
+
+    if(stepByStep) fileUtils.saveSolutionSteps("saida.out", solutionSteps, lineSize);
 
     return executionTime;
 }
 
+// double solvePuzzleIDAStar(Board board, Board goal, bool stepByStep, int puzzleSize, int lineSize) {
+//     Graph graph(board, puzzleSize, lineSize);
+//     map<vector<int>, Board> pi;
+//     vector<Board> solutionSteps;
+//     FileUtils fileUtils;
+
+//     auto start = std::chrono::high_resolution_clock::now();
+//     pi = graph.ida_star(board, goal, lineSize);
+//     auto end = std::chrono::high_resolution_clock::now();
+//     std::chrono::duration<double> elapsed = end - start;
+//     double executionTime = elapsed.count();
+
+//     Board current = goal;
+
+//     while (current.first != board.first) {
+//         solutionSteps.push_back(current);
+//         current = pi[current.first]; 
+//     }
+
+//     solutionSteps.push_back(board);
+
+//     reverse(solutionSteps.begin(), solutionSteps.end());
+
+//     if(stepByStep) fileUtils.saveSolutionSteps("saida.out", solutionSteps, lineSize);
+
+//     return executionTime;
+// }
+
 
 void displayMenu() {
-    std::cout << "===== MENU =====\n";
-    std::cout << "1. Resolver 8-puzzle usando A*\n";
-    std::cout << "2. Resolver 15-puzzle usando A*\n";
-    std::cout << "3. Resolver 8-puzzle usando IDA*\n";
-    std::cout << "4. Resolver 15-puzzle usando IDA*\n";
-    std::cout << "5. Sair\n";
-    std::cout << "================\n";
-    std::cout << "Selecione uma opcao: ";
+    cout << "===== MENU =====\n";
+    cout << "1. Resolver 8-puzzle usando A*\n";
+    cout << "2. Resolver 15-puzzle usando A*\n";
+    // cout << "3. Resolver 8-puzzle usando IDA*\n";
+    // cout << "4. Resolver 15-puzzle usando IDA*\n";
+    cout << "3. Sair\n";
+    cout << "================\n";
+    cout << "Selecione uma opcao: ";
+}
+
+void displaySubMenu() {    
+    cout << "Escolha uma das opcoes abaixo:\n";
+    cout << "1. Executar instancia expecifica\n";
+    cout << "2. Executar todas as instancias\n";
+    cout << "3. Sair\n";
 }
 
 void stepByStepMenu(bool isAStar, bool is15Puzzle) {
     char choice;
-    cout << "Deseja ver a solução passo a passo? (s/n): ";
-    cin >> choice;
+    int option;
+    bool stepByStep = false;
+    size_t instanceNumber;
+    double executionTime;
 
-    // vector<vector<int>> m(9, vector<int>(9,0));
-    vector<int> board = {5, 6, 2, 7, 1, 8, 3, 4, 0};
-    vector<int> goal = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-    vector<int> start = {1, 0, 2, 3, 4, 5, 6, 7, 8};
-    Board b1 = {board,INT32_MAX};
-    Board b2 = {goal,INT32_MAX};
+    displaySubMenu();
+    cin >> option;
 
+    vector<Board>& instances = is15Puzzle ? puzzle_15_instances : puzzle_8_instances;
+    int puzzleSize = is15Puzzle ? 16 : 9;
+    int lineSize = is15Puzzle ? 4 : 3;
+    vector<int> goal(puzzleSize);
 
-    bool stepByStep = (choice == 's' || choice == 'S');
-    // auto start = std::chrono::high_resolution_clock::now();
-
-    if (isAStar) {
-        // solvePuzzleAStar(stepByStep, is15Puzzle);
-        puzzleInstance(b1, b2, stepByStep);
-    } else {
-        // solvePuzzleIDAStar(stepByStep, is15Puzzle);
+    for(int i = 0; i < puzzleSize; i++) {
+        goal[i] = i;
+        
     }
+    
+    Board goalBoard = {goal, INT32_MAX};
 
-    // auto end = std::chrono::high_resolution_clock::now();
-    // std::chrono::duration<double> elapsed = end - start;
-    // std::cout << "Tempo de execução: " << elapsed.count() << " segundos\n";
+    switch (option) {
+        case 1:
+            cout << "Digite o Numero da instância(1 - " << instances.size() << ")" << ": ";
+            cin >> instanceNumber;
+
+            if (instanceNumber < 1 || instanceNumber > instances.size()) {
+                cout << "Numero de instancia invalido!\n";
+                return;
+            }
+
+            cout << "Deseja ver a solução passo a passo? (s/n): ";
+            cin >> choice;
+
+            stepByStep = (choice == 's' || choice == 'S');
+
+            cout << "\n";
+            if (isAStar) {
+                cout << "Numero da instância: " << instanceNumber << "\n"; 
+                executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+                cout << "Tempo de execução: " << executionTime << " segundos\n";
+            } 
+            // else {
+            //     // solvePuzzleIDAStar(stepByStep, is15Puzzle);
+            //     executionTime = solvePuzzleIDAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+            //     cout << "Tempo de execução: " << executionTime << " segundos\n";
+
+            // }
+
+            break;
+        case 2:
+            if (isAStar) {
+                for(size_t i = 1; i <= instances.size(); i++) {
+                    cout << "\n";
+                    instanceNumber = i;
+                    cout << "Numero da instância: " << instanceNumber << "\n"; 
+                    executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+                    cout << "Tempo de execução: " << executionTime << " segundos\n";
+                }
+            
+            } 
+            // else {
+            //     executionTime = solvePuzzleIDAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+            //     cout << "Tempo de execução: " << executionTime << " segundos\n";
+            // }
+            break;
+
+        default:
+            return;
+    }
 }
 
 int main() {
-    // vector<vector<int>> m(9, vector<int>(9,0));
-    // vector<int> board = {5, 6, 2, 7, 1, 8, 3, 4, 0};
-    // vector<int> goal = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-    // vector<int> start = {1, 0, 2, 3, 4, 5, 6, 7, 8};
-    // Board b1 = {board,INT32_MAX};
-    // Board b2 = {goal,INT32_MAX};
-    // Graph graph(b1, 9, 3);
-
-    // cout << "Tempo de execução: " << puzzleInstance(b1, b2) << endl;
-
     int option;
+    FileUtils fileUtils;
+
+    fileUtils.readInstances("./ins/8puzzle_instances.txt", puzzle_8_instances);
+    fileUtils.readInstances("./ins/15puzzle_instances.txt", puzzle_15_instances);
 
     do {
         displayMenu();
@@ -79,20 +175,21 @@ int main() {
             case 2:
                 stepByStepMenu(true, true);
                 break;
+            // case 3:
+            //     stepByStepMenu(false, false);
+            //     break;
+            // case 4:
+            //     stepByStepMenu(false, true);
+            //     break;
             case 3:
-                stepByStepMenu(false, false);
-                break;
-            case 4:
-                stepByStepMenu(false, true);
-                break;
-            case 5:
                 cout << "Saindo...\n";
                 break;
             default:
                 cout << "Opcao invalida! Tente novamente.\n";
+                break;
         }
         cout << "\n";
-    } while (option != 5);
+    } while (option != 3);
 
     return 0;
 }

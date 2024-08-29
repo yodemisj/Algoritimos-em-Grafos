@@ -1,15 +1,5 @@
 #pragma once
-#include <iostream>
-#include <vector>
-#include <map>
-#include <queue>
-#include <cmath>
-#include <algorithm>
-
-using namespace std;
-
-typedef pair<vector<int>, int> Board;
-// typedef vector<int> Board;
+#include "includes.h"
 
 class Graph {
 private: 
@@ -18,9 +8,9 @@ private:
 
 public:
 
-Graph(Board& board, int puzzleSize, int linesize) {
+Graph(Board& board, int puzzleSize, int lineSize) {
     adj[board] = vector<Board>();
-    initM(m, 9, 3);
+    initM(m, puzzleSize, lineSize);
 }
 
 void initM(vector<vector<int>>& m, int puzzleSize, int lineSize) {
@@ -33,7 +23,7 @@ void initM(vector<vector<int>>& m, int puzzleSize, int lineSize) {
 }
 
 int searchEmptySpace (const vector<int>& puzzle) {
-    for(int i = 0; i < puzzle.size(); i++) {
+    for(size_t i = 0; i < puzzle.size(); i++) {
         if(puzzle[i] == 0) return i;
     }
 
@@ -67,7 +57,7 @@ int calculateMovesToPosition(const int position, const int destination, const in
 int heuristic(const vector<int>& board) {
     int total = 0;
 
-    for(int i = 0; i < board.size(); i++) {  
+    for(size_t i = 0; i < board.size(); i++) {  
         if(board[i] == 0) continue;
         total += m[board[i]][i];
     }
@@ -122,63 +112,32 @@ void addNeighbors(const Board& board, const int lineSize) {
     } 
 }
 
-void a_star(Board start, Board goal, int lineSize, bool stepByStep) {
+map<vector<int>, Board> a_star(Board start, Board goal, int lineSize) {
     auto compare = [](const Board& a, const Board& b) {
         return a.second > b.second;
     };
     map<Board, int> dist;
-    map<Board, Board> pi;
+    map<vector<int>, Board> pi;
     vector<Board> S;
     priority_queue<Board, vector<Board>, decltype(compare)> Q(compare);
     dist[start] = 0;
     start.second = 0;
     Q.push(start);
 
-    // int i = 0;
+    int avaliatedStates = 0;
+
     while(!Q.empty()) {
         Board current = Q.top();
         Q.pop();
         S.push_back(current);
-        // cout<<i++<<endl;
-
-        // for(auto number : current.first) {
-        //     cout << number << " ";
+        avaliatedStates++;
+        // for(int num : current.first) {
+        //     cout << num << " ";
         // }
-        // cout<<endl;
-        // if(current.first == goal.first) {
-        //     cout<<"achou"<<endl;
-            
-        //     break;
-        // }
-
-        // if (stepByStep) { 
-        //     for (auto number : current.first) {
-        //         cout << number << " ";
-        //     }
-        //     cout << endl;
-        // }
-
+        // cout << endl;
         if (current.first == goal.first) {
-            cout << "Solução encontrada!" << endl;
-            // Exibir a sequência de passos se stepByStep for false
-            if (!stepByStep) {
-                vector<Board> path;
-                for (Board at = current; at != start; at = pi[at]) {
-                    path.push_back(at);
-                }
-                path.push_back(start);
-                reverse(path.begin(), path.end());
-
-                for (const auto& state : path) {
-                    for (int num : state.first) {
-                        cout << num << " ";
-                    }
-                    cout << endl;
-                }
-            }
             break;
         }
-
 
         addNeighbors(current,lineSize);
 
@@ -188,11 +147,14 @@ void a_star(Board start, Board goal, int lineSize, bool stepByStep) {
             if(dist[neighbor] > dist[current] + 1){
                 dist[neighbor] = dist[current] + 1;
                 neighbor.second = dist[neighbor] + heuristic(neighbor.first);
-                pi[neighbor] = current;
+                pi[neighbor.first] = current;
                 Q.push(neighbor);
             }
         }
     }
+
+    cout << "Numero de estados avaliados: " << avaliatedStates << "\n";
+    return pi;
 }   
 
 };
