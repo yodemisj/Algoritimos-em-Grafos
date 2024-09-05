@@ -28,7 +28,7 @@ double solvePuzzleAStar(Board board, Board goal, bool stepByStep, int puzzleSize
 
     solutionSteps.push_back(board);
 
-    cout << "Passos na solução ótima: " << solutionSteps.size() << "\n";
+    cout << "Passos na solução ótima: " << solutionSteps.size() - 1 << "\n";
 
     reverse(solutionSteps.begin(), solutionSteps.end());
 
@@ -100,10 +100,9 @@ void stepByStepMenu(bool isAStar, bool is15Puzzle) {
     vector<int> goal(puzzleSize);
 
     for(int i = 0; i < puzzleSize; i++) {
-        goal[i] = i;
-        
+        goal[i] = i;   
     }
-    
+
     Board goalBoard = {goal, INT32_MAX};
 
     switch (option) {

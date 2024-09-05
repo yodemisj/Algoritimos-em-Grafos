@@ -3,13 +3,13 @@
 
 class Graph {
 private: 
-    map<Board,vector<Board>> adj;
+    map<vector<int>,vector<Board>> adj;
     vector<vector<int>> m;
 
 public:
 
 Graph(Board& board, int puzzleSize, int lineSize) {
-    adj[board] = vector<Board>();
+    adj[board.first] = vector<Board>();
     initM(m, puzzleSize, lineSize);
 }
 
@@ -78,8 +78,8 @@ void addNeighbors(const Board& board, const int lineSize) {
         copy = board;
         copy.second = INT32_MAX;
         swap(copy.first[currentIndex], copy.first[whiteSpaceIndex]);
-        if(adj.count(copy) == 0) adj[copy] = vector<Board>();
-        adj[board].push_back(copy);
+        if(adj.count(copy.first) == 0) adj[copy.first] = vector<Board>();
+        adj[board.first].push_back(copy);
     }
     // Down
     currentIndex = whiteSpaceIndex + lineSize;
@@ -87,8 +87,8 @@ void addNeighbors(const Board& board, const int lineSize) {
         copy = board;
         copy.second = INT32_MAX;
         swap(copy.first[currentIndex], copy.first[whiteSpaceIndex]);
-        if(adj.count(copy) == 0) adj[copy] = vector<Board>();
-        adj[board].push_back(copy);
+        if(adj.count(copy.first) == 0) adj[copy.first] = vector<Board>();
+        adj[board.first].push_back(copy);
     } 
 
     // Left
@@ -97,8 +97,8 @@ void addNeighbors(const Board& board, const int lineSize) {
         copy = board;
         copy.second = INT32_MAX;
         swap(copy.first[currentIndex], copy.first[whiteSpaceIndex]);
-        if(adj.count(copy) == 0) adj[copy] = vector<Board>();
-        adj[board].push_back(copy);
+        if(adj.count(copy.first) == 0) adj[copy.first] = vector<Board>();
+        adj[board.first].push_back(copy);
     } 
 
     // Right
@@ -107,47 +107,49 @@ void addNeighbors(const Board& board, const int lineSize) {
         copy = board;
         copy.second = INT32_MAX;
         swap(copy.first[currentIndex], copy.first[whiteSpaceIndex]);
-        if(adj.count(copy) == 0) adj[copy] = vector<Board>();
-        adj[board].push_back(copy);
+        if(adj.count(copy.first) == 0) adj[copy.first] = vector<Board>();
+        adj[board.first].push_back(copy);
     } 
 }
 
 map<vector<int>, Board> a_star(Board start, Board goal, int lineSize) {
     auto compare = [](const Board& a, const Board& b) {
+        // cout << a.second << " " << b.second << endl;
+        // cout <<"a < b: "<< (a.second < b.second) << endl;
         return a.second > b.second;
     };
-    map<Board, int> dist;
+    map<vector<int>, int> dist;
     map<vector<int>, Board> pi;
     vector<Board> S;
     priority_queue<Board, vector<Board>, decltype(compare)> Q(compare);
-    dist[start] = 0;
+    // priority_queue<pair<int, Board>> Q;
+    dist[start.first] = 0;
     start.second = 0;
     Q.push(start);
+    // Q.push(make_pair(start.second, start));
 
     int avaliatedStates = 0;
 
     while(!Q.empty()) {
         Board current = Q.top();
+        // Board current = Q.top().second;
         Q.pop();
         S.push_back(current);
         avaliatedStates++;
-        // for(int num : current.first) {
-        //     cout << num << " ";
-        // }
-        // cout << endl;
         if (current.first == goal.first) {
             break;
         }
 
         addNeighbors(current,lineSize);
 
-        for(Board& neighbor : adj[current]) {
-            if(dist.count(neighbor) == 0) dist[neighbor] = INT32_MAX;
+        for(Board& neighbor : adj[current.first]) {
+            if(dist.count(neighbor.first) == 0) dist[neighbor.first] = INT32_MAX;
 
-            if(dist[neighbor] > dist[current] + 1){
-                dist[neighbor] = dist[current] + 1;
-                neighbor.second = dist[neighbor] + heuristic(neighbor.first);
+            if(dist[neighbor.first] > dist[current.first] + 1){
+                dist[neighbor.first] = dist[current.first] + 1;
+                neighbor.second = dist[neighbor.first] + heuristic(neighbor.first);
                 pi[neighbor.first] = current;
+                // Q.push(make_pair(-neighbor.second, neighbor));
                 Q.push(neighbor);
             }
         }
