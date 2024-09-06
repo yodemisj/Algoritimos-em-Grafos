@@ -112,7 +112,7 @@ void addNeighbors(const Board& board, const int lineSize) {
     } 
 }
 
-map<vector<int>, Board> a_star(Board start, Board goal, int lineSize) {
+map<vector<int>, Board> a_star(Board start, Board goal, int lineSize, int& evaluatedStates) {
     auto compare = [](const Board& a, const Board& b) {
         // cout << a.second << " " << b.second << endl;
         // cout <<"a < b: "<< (a.second < b.second) << endl;
@@ -128,14 +128,14 @@ map<vector<int>, Board> a_star(Board start, Board goal, int lineSize) {
     Q.push(start);
     // Q.push(make_pair(start.second, start));
 
-    int avaliatedStates = 0;
+    evaluatedStates = 0;
 
     while(!Q.empty()) {
         Board current = Q.top();
         // Board current = Q.top().second;
         Q.pop();
         S.push_back(current);
-        avaliatedStates++;
+        evaluatedStates++;
         if (current.first == goal.first) {
             break;
         }
@@ -155,7 +155,7 @@ map<vector<int>, Board> a_star(Board start, Board goal, int lineSize) {
         }
     }
 
-    cout << "Numero de estados avaliados: " << avaliatedStates << "\n";
+    cout << "Numero de estados avaliados: " << evaluatedStates << "\n";
     return pi;
 }   
 

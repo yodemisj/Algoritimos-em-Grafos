@@ -7,14 +7,14 @@ using namespace std;
 vector<Board> puzzle_8_instances;
 vector<Board> puzzle_15_instances;
 
-double solvePuzzleAStar(Board board, Board goal, bool stepByStep, int puzzleSize, int lineSize) {
+double solvePuzzleAStar(Board board, Board goal, bool stepByStep, int puzzleSize, int lineSize, int& states, int& optimalSolutionSteps) {
     Graph graph(board, puzzleSize, lineSize);
     map<vector<int>, Board> pi;
     vector<Board> solutionSteps;
     FileUtils fileUtils;
 
     auto start = std::chrono::high_resolution_clock::now();
-    pi = graph.a_star(board, goal, lineSize);
+    pi = graph.a_star(board, goal, lineSize, states);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
     double executionTime = elapsed.count();
@@ -28,8 +28,8 @@ double solvePuzzleAStar(Board board, Board goal, bool stepByStep, int puzzleSize
 
     solutionSteps.push_back(board);
 
-    cout << "Passos na solução ótima: " << solutionSteps.size() - 1 << "\n";
-
+    optimalSolutionSteps = solutionSteps.size() - 1;
+    cout << "Passos na solução ótima: " << optimalSolutionSteps << "\n";
     reverse(solutionSteps.begin(), solutionSteps.end());
 
     if(stepByStep) fileUtils.saveSolutionSteps("saida.out", solutionSteps, lineSize);
@@ -90,6 +90,12 @@ void stepByStepMenu(bool isAStar, bool is15Puzzle) {
     bool stepByStep = false;
     size_t instanceNumber;
     double executionTime;
+    vector<int> instanceNumbers;
+    vector<int> evaluatedStates;      
+    vector<int> solutionSteps;        
+    vector<double> executionTimes;
+    int optimalSolutionSteps = 0;
+    int states = 0;
 
     displaySubMenu();
     cin >> option;
@@ -122,8 +128,10 @@ void stepByStepMenu(bool isAStar, bool is15Puzzle) {
 
             cout << "\n";
             if (isAStar) {
+                states = 0;
+                optimalSolutionSteps = 0;
                 cout << "Numero da instância: " << instanceNumber << "\n"; 
-                executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+                executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize, states, optimalSolutionSteps);
                 cout << "Tempo de execução: " << executionTime << " segundos\n";
             } 
             // else {
@@ -139,11 +147,20 @@ void stepByStepMenu(bool isAStar, bool is15Puzzle) {
                 for(size_t i = 1; i <= instances.size(); i++) {
                     cout << "\n";
                     instanceNumber = i;
+                    states = 0;
+                    optimalSolutionSteps = 0;
                     cout << "Numero da instância: " << instanceNumber << "\n"; 
-                    executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
+                    executionTime = solvePuzzleAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize, states, optimalSolutionSteps);
                     cout << "Tempo de execução: " << executionTime << " segundos\n";
+
+                    instanceNumbers.push_back(instanceNumber);
+                    evaluatedStates.push_back(states);
+                    solutionSteps.push_back(optimalSolutionSteps);
+                    executionTimes.push_back(executionTime);
                 }
             
+                FileUtils fileUtils;
+                fileUtils.saveAStarResultsToCSV("astar_results.csv", instanceNumbers, evaluatedStates, solutionSteps, executionTimes);
             } 
             // else {
             //     executionTime = solvePuzzleIDAStar(instances[instanceNumber - 1], goalBoard, stepByStep, puzzleSize, lineSize);
