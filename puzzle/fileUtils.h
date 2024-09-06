@@ -48,4 +48,24 @@ public:
 
         file.close();
     }
+    static void saveAStarResultsToCSV(const string& filePath, const vector<int>& instanceNumbers, const vector<int>& evaluatedStates, const vector<int>& solutionSteps, const vector<double>& executionTimes) {
+        ofstream file(filePath);
+
+        // Escreve o cabeçalho do CSV
+        file << "Numero da Instancia;Numero de Estados Avaliados;Passos na Solucao Otima;Tempo de Execucao (s)\n";
+
+        // Para cada instância, escreve o número da instância, estados avaliados, passos da solução e tempo de execução
+        for (int i = 0; i < instanceNumbers.size(); ++i) {
+            stringstream execTimeStream;
+            execTimeStream << fixed << setprecision(7) << executionTimes[i];  // Formata o tempo de execução com 7 casas decimais
+            string execTimeStr = execTimeStream.str();
+            replace(execTimeStr.begin(), execTimeStr.end(), '.', ',');  // Substitui o ponto decimal por vírgula (formato europeu)
+
+            file << instanceNumbers[i] << ";" << evaluatedStates[i] << ";" << solutionSteps[i] << ";" << execTimeStr << "\n";
+        }
+
+        file.close();
+    }
+
+
 };
